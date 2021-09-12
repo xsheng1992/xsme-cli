@@ -5,6 +5,9 @@
   "author": "xiangsheng <xiangsheng@supcon.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
   "license": "ISC",
+  "bin": {
+    "xsme-cli": "bin/index.js"
+  },
   "main": "lib/core.js",
   "directories": {
     "lib": "lib",
