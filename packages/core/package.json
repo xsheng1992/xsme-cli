@@ -1,6 +1,6 @@
 {
   "name": "@xsme-cli/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "xsme-cli core",
   "author": "xiangsheng <xiangsheng@supcon.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
@@ -30,7 +30,7 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/utils": "^1.0.0"
+    "@xsme-cli/utils": "^1.0.3"
   },
   "gitHead": "e266923068e10a76ab7dd0ec082ab45ee7ef5dda"
 }
