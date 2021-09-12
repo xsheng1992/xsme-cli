@@ -1,6 +1,6 @@
 {
   "name": "@xsme-cli/utils",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "xsme-cli utils",
   "author": "xiangsheng <xiangsheng@supcon.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
@@ -14,7 +14,8 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "repository": {
     "type": "git",

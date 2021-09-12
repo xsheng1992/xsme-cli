@@ -1,6 +1,6 @@
 {
   "name": "@xsme-cli/core",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "xsme-cli core",
   "author": "xiangsheng <xiangsheng@supcon.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
@@ -17,7 +17,8 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "repository": {
     "type": "git",
