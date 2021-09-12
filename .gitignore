@@ -6,3 +6,4 @@ package-lock.json
 *.log
 
 packages/**/node_modules
+packages/**/package-lock.json
