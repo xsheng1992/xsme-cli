@@ -31,7 +31,7 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/utils": "^1.0.3"
+    "@xsme-cli/utils": "file:../utils"
   },
   "gitHead": "e266923068e10a76ab7dd0ec082ab45ee7ef5dda"
 }
