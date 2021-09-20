@@ -8,7 +8,7 @@
   "bin": {
     "xsme-cli": "bin/index.js"
   },
-  "main": "lib/core.js",
+  "main": "lib/index.js",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -31,7 +31,17 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/utils": "file:../utils"
+    "@xsme-cli/log": "file:../../utils/log",
+    "@xsme-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "colors": "^1.4.0",
+    "dotenv": "^10.0.0",
+    "import-local": "^3.0.2",
+    "minimist": "^1.2.5",
+    "npmlog": "^5.0.1",
+    "path-exists": "^4.0.0",
+    "root-check": "^1.0.0",
+    "semver": "^7.3.5",
+    "user-home": "^3.0.0"
   },
   "gitHead": "e266923068e10a76ab7dd0ec082ab45ee7ef5dda"
 }
