@@ -31,9 +31,11 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/log": "file:../../utils/log",
     "@xsme-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@xsme-cli/log": "file:../../utils/log",
+    "@xsme-cli/init": "file:../../commands/init",
     "colors": "^1.4.0",
+    "commander": "^8.2.0",
     "dotenv": "^10.0.0",
     "import-local": "^3.0.2",
     "minimist": "^1.2.5",

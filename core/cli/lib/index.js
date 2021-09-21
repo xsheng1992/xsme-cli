@@ -7,13 +7,19 @@ const semver = require('semver')
 const colors = require('colors/safe')
 const userHome = require('user-home')
 const pathExists = require('path-exists').sync
+const commander = require('commander')
+
+// commands
+const init = require('@xsme-cli/init')
 
 const log = require('@xsme-cli/log')
 
 const pkg = require('../package.json')
 const constant = require('./consts')
 
-let args, config
+let args
+
+const program = new commander.Command()
 
 async function core() {
 	try {
@@ -21,11 +27,51 @@ async function core() {
 		checkNodeVersion()
 		checkRoot()
 		checkUserHome()
-		checkInputArgs()
+		// checkInputArgs()
 		checkEnv()
 		await checkGlobalUpdate()
+		registerCommand()
 	} catch (e) {
 		log.error(e.message)
+	}
+}
+
+// 注册指令
+function registerCommand () {
+	program
+		.name(Object.keys(pkg.bin)[0])
+		.usage('<command> [options]')
+		.version(pkg.version)
+		.option('-d --debug', '是否开启调试模式', false)
+
+	program
+		.command('init [projectName]')
+		.option('-f, --force', '是否强制初始化')
+		.action(init)
+
+	// 开启debug模式
+	program.on('option:debug', function () {
+		const { debug } = this.opts()
+		process.env.LOG_LEVEL = debug ? 'verbose' : 'info'
+		log.level = process.env.LOG_LEVEL
+		log.verbose('test')
+	})
+
+	// 对未知命令的监听
+	program.on('command:*', function (obj) {
+		const availableCommands = program.commands.map(cmd => cmd.name())
+		log.error(colors.red('未知的命令：' + obj[0]))
+		if (availableCommands.length > 0) {
+			log.wran(colors.red('可用的命令：' +availableCommands.join(',')))
+		}
+	})
+
+	program.parse(process.argv)
+
+	// 如果没有输入命令，就打印帮助文档
+	if (program.args && program.args.length < 1) {
+		program.outputHelp()
+		console.log()
 	}
 }
 
