@@ -23,13 +23,7 @@ const program = new commander.Command()
 
 async function core() {
 	try {
-		checkPkgVersion()
-		checkNodeVersion()
-		checkRoot()
-		checkUserHome()
-		// checkInputArgs()
-		checkEnv()
-		await checkGlobalUpdate()
+		await prepare()
 		registerCommand()
 	} catch (e) {
 		log.error(e.message)
@@ -43,6 +37,7 @@ function registerCommand () {
 		.usage('<command> [options]')
 		.version(pkg.version)
 		.option('-d --debug', '是否开启调试模式', false)
+		.option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '')
 
 	program
 		.command('init [projectName]')
@@ -55,6 +50,12 @@ function registerCommand () {
 		process.env.LOG_LEVEL = debug ? 'verbose' : 'info'
 		log.level = process.env.LOG_LEVEL
 		log.verbose('test')
+	})
+	
+	// 指定targetPath
+	program.on('option:targetPath', function () {
+		const { targetPath } = program.opts()
+		process.env.CLI_TARGET_PATH = targetPath
 	})
 
 	// 对未知命令的监听
@@ -73,6 +74,16 @@ function registerCommand () {
 		program.outputHelp()
 		console.log()
 	}
+}
+
+// 准备阶段
+async function prepare () {
+	checkPkgVersion() // 检查脚手架版本
+	checkNodeVersion() // 检查node版本
+	checkRoot() // 检查是否权限需要降级
+	checkUserHome() // 检查用户主目录
+	checkEnv() // 检查环境变量
+	await checkGlobalUpdate() // 检查全局更新
 }
 
 // 检查是否有更新
@@ -98,27 +109,10 @@ function checkEnv () {
 		})
 	}
 	createDefaultConfig()
-	log.verbose('环境变量', process.env.CLI_HOME_PATH)
 }
 
 function createDefaultConfig () {
 	process.env.CLI_HOME_PATH = path.join(userHome, constant.DEFAULT_CLI_HOME)
-}
-
-// 检查入参
-function checkInputArgs () {
-	const minimist = require('minimist')
-	args = minimist(process.argv.slice(2))
-	checkArgs()
-}
-
-function checkArgs () {
-	if (args.debug) {
-		process.env.LOG_LEVEL = 'verbose'
-	} else {
-		process.env.LOG_LEVEL = 'info'
-	}
-	log.level = process.env.LOG_LEVEL
 }
 
 // 检查用户运行主目录
