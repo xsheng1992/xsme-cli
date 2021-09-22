@@ -10,14 +10,13 @@ const pathExists = require('path-exists').sync
 const commander = require('commander')
 
 // commands
+const exec = require('@xsme-cli/exec')
 const init = require('@xsme-cli/init')
 
 const log = require('@xsme-cli/log')
 
 const pkg = require('../package.json')
 const constant = require('./consts')
-
-let args
 
 const program = new commander.Command()
 
@@ -33,6 +32,7 @@ async function core() {
 // 注册指令
 function registerCommand () {
 	program
+		.storeOptionsAsProperties()
 		.name(Object.keys(pkg.bin)[0])
 		.usage('<command> [options]')
 		.version(pkg.version)
@@ -42,7 +42,7 @@ function registerCommand () {
 	program
 		.command('init [projectName]')
 		.option('-f, --force', '是否强制初始化')
-		.action(init)
+		.action(exec)
 
 	// 开启debug模式
 	program.on('option:debug', function () {

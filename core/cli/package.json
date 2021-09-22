@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@xsme-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@xsme-cli/exec": "file:../exec",
     "@xsme-cli/log": "file:../../utils/log",
     "@xsme-cli/init": "file:../../commands/init",
     "colors": "^1.4.0",
