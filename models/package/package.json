@@ -27,8 +27,12 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/utils": "file:../../utils/utils",
     "@xsme-cli/format-path": "file:../../utils/format-path",
+    "@xsme-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@xsme-cli/utils": "file:../../utils/utils",
+    "fs-extra": "^10.0.0",
+    "npminstall": "^4.11.0",
+    "path-exists": "^4.0.0",
     "pkg-dir": "^5.0.0"
   }
 }
