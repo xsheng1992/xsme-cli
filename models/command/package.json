@@ -1,7 +1,7 @@
 {
-  "name": "@xsme-cli/init",
+  "name": "@xsme-cli/command",
   "version": "1.0.0",
-  "description": "> TODO: description",
+  "description": "xsme-cli command",
   "author": "xiangsheng <xiangsheng@supcon.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
   "license": "ISC",
@@ -27,7 +27,8 @@
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "@xsme-cli/command": "file:../../models/command",
-    "@xsme-cli/log": "file:../../utils/log"
+    "@xsme-cli/log": "file:../../utils/log",
+    "colors": "^1.4.0",
+    "semver": "^7.3.5"
   }
 }

@@ -11,7 +11,6 @@ const commander = require('commander')
 
 // commands
 const exec = require('@xsme-cli/exec')
-const init = require('@xsme-cli/init')
 
 const log = require('@xsme-cli/log')
 
@@ -82,7 +81,6 @@ function registerCommand () {
 // 准备阶段
 async function prepare () {
 	checkPkgVersion() // 检查脚手架版本
-	checkNodeVersion() // 检查node版本
 	checkRoot() // 检查是否权限需要降级
 	checkUserHome() // 检查用户主目录
 	checkEnv() // 检查环境变量
@@ -129,16 +127,6 @@ function checkUserHome () {
 function checkRoot () {
 	const rootCheck = require('root-check')
 	rootCheck()
-}
-
-// 检查当前node版本号
-function checkNodeVersion() {
-	const currentVersion = process.version
-	const lowestVersion = constant.LOWEST_NODE_VERSION
-
-	if (!semver.gte(currentVersion, lowestVersion)) {
-		throw new Error(colors.red(`xsme-cli 需要安装 v${lowestVersion} 以上版本的 Node.js`))
-	}
 }
 
 // 检查当前版本号
