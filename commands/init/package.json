@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@xsme-cli/command": "file:../../models/command",
-    "@xsme-cli/log": "file:../../utils/log"
+    "@xsme-cli/log": "file:../../utils/log",
+    "inquirer": "^8.1.5"
   }
 }
