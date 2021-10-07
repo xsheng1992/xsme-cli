@@ -28,7 +28,13 @@
   },
   "dependencies": {
     "@xsme-cli/command": "file:../../models/command",
+    "@xsme-cli/package": "file:../../models/package",
     "@xsme-cli/log": "file:../../utils/log",
-    "inquirer": "^8.1.5"
+    "@xsme-cli/request": "file:../../utils/request",
+    "@xsme-cli/utils": "file:../../utils/utils",
+    "fs-extra": "^10.0.0",
+    "inquirer": "^8.1.5",
+    "semver": "^7.3.5",
+    "user-home": "^3.0.0"
   }
 }

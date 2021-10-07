@@ -1,8 +1,8 @@
 {
-  "name": "@xsme-cli/utils",
-  "version": "1.0.4",
-  "description": "xsme-cli utils",
-  "author": "xiangsheng <xiangsheng@supcon.com>",
+  "name": "@xsme-cli/request",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "xsheng1992 <a415441091@hotmail.com>",
   "homepage": "https://github.com/xsheng1992/xsme-cli#readme",
   "license": "ISC",
   "main": "lib/index.js",
@@ -14,7 +14,6 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
   "repository": {
@@ -22,12 +21,12 @@
     "url": "git+https://github.com/xsheng1992/xsme-cli.git"
   },
   "scripts": {
-    "test": "echo \"Run tests from utils\""
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/xsheng1992/xsme-cli/issues"
   },
   "dependencies": {
-    "cli-spinner": "^0.2.10"
+    "axios": "^0.22.0"
   }
 }

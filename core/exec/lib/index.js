@@ -46,7 +46,7 @@ async function exec() {
 
     if (await pkg.exists()) {
       // 更新package
-      pkg.update()
+      await pkg.update()
     } else {
       // 安装package
       await pkg.install()
