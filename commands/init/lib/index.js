@@ -17,6 +17,9 @@ const Package = require("@xsme-cli/package");
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
 
+const TEMPLATE_TYPE_NORMAL = 'normal'
+const TEMPLATE_TYPE_CUSTOM = 'custom'
+
 class InitCommand extends Command {
   init () {
     this.projectName = this._argv[0] || ''
@@ -35,10 +38,37 @@ class InitCommand extends Command {
         this.projectInfo = projectInfo
         await this.downloadTemplate()
         // 3. 安装模板
+        await this.installTemplate()
       }
     } catch (e) {
       log.error(e.message)
     }
+  }
+
+  async installTemplate () {
+    log.verbose('templateInfo', this.templateInfo)
+    if (this.templateInfo) {
+      if (!this.templateInfo.type) {
+        this.templateInfo.type = TEMPLATE_TYPE_NORMAL
+      }
+      if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
+        await this.installNormalTemplate()
+      } else if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
+        await this.installCustomTemplate()
+      } else {
+        throw new Error('项目模版类型无法识别！')
+      }
+    } else {
+      throw new Error('项目模版信息不存在！')
+    }
+  }
+
+  async installNormalTemplate () {
+    console.log('安装标准模版')
+  }
+
+  async installCustomTemplate () {
+    console.log('安装自定义模版')
   }
 
   async downloadTemplate () {
@@ -52,6 +82,7 @@ class InitCommand extends Command {
     const targetPath = path.resolve(userHome, '.xsme-cli', 'template')
     const storeDir = path.resolve(userHome, '.xsme-cli', 'template', 'node_modules')
     const { npmName, version } = templateInfo
+    this.templateInfo = templateInfo
     const templateNpm = new Package({
       targetPath,
       storeDir,
@@ -65,11 +96,13 @@ class InitCommand extends Command {
       try {
         // 更新package
         await templateNpm.update()
-        log.success('模版更新成功')
       } catch (e) {
         throw e
       } finally {
         spinner.stop(true)
+        if (await templateNpm.exists()) {
+          log.success('模版更新成功')
+        }
       }
     } else {
       const spinner = spinnerStart('正在下载模版...')
@@ -77,11 +110,13 @@ class InitCommand extends Command {
       try {
         // 安装package
         await templateNpm.install()
-        log.success('模版下载成功')
       } catch (e) {
         throw e
       } finally {
         spinner.stop(true)
+        if (await templateNpm.exists()) {
+          log.success('模版下载成功')
+        }
       }
     }
   }
