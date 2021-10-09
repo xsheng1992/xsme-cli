@@ -4,12 +4,14 @@ const fs = require('fs')
 const path = require("path");
 const inquirer = require('inquirer')
 const fse = require('fs-extra')
+const glob = require('glob')
+const ejs = require('ejs')
 const semver = require('semver')
 const userHome = require('user-home')
 
 const Command = require('@xsme-cli/command')
 const log = require('@xsme-cli/log')
-const { spinnerStart, sleep } = require('@xsme-cli/utils')
+const { spinnerStart, sleep, execAsync } = require('@xsme-cli/utils')
 
 const getProjectTemplate = require('./getProjectTemplate')
 const Package = require("@xsme-cli/package");
@@ -19,6 +21,8 @@ const TYPE_COMPONENT = 'component'
 
 const TEMPLATE_TYPE_NORMAL = 'normal'
 const TEMPLATE_TYPE_CUSTOM = 'custom'
+
+const WHITE_COMMAND = ['npm', 'cnpm', 'yarn']
 
 class InitCommand extends Command {
   init () {
@@ -42,6 +46,9 @@ class InitCommand extends Command {
       }
     } catch (e) {
       log.error(e.message)
+      if (process.env.LOG_LEVEL === 'verbose') {
+        console.log(e)
+      }
     }
   }
 
@@ -63,8 +70,93 @@ class InitCommand extends Command {
     }
   }
 
+  checkCommand (cmd) {
+    if (WHITE_COMMAND.includes(cmd)) {
+      return cmd
+    }
+    return null
+  }
+
+  async execCommand (command, errorMsg) {
+    let commandRet
+    if (command) {
+      const cmdArray = command.split(' ')
+      const cmd = this.checkCommand(cmdArray[0])
+      if (!cmd) {
+        throw new Error('命令不存在！命令：' + command)
+      }
+      const args = cmdArray.slice(1)
+      try {
+        commandRet = await execAsync(cmd, args, {
+          cwd: process.cwd(),
+          stdio: 'inherit'
+        })
+      } catch (e) {
+        throw e
+      }
+    }
+    // 判断结果
+    if (commandRet !== 0) {
+      throw new Error(errorMsg)
+    }
+    return commandRet
+  }
+
+  async ejsRender (option) {
+    const dir = process.cwd()
+    return new Promise((resolve, reject) => {
+      glob('**', {
+        cwd: dir,
+        ignore: option.ignore || '',
+        nodir: true
+      }, (err, files) => {
+        if (err) reject(err)
+        Promise.all(files.map(file => {
+          const filePath = path.join(dir, file)
+          return new Promise(((resolve1, reject1) => {
+            ejs.renderFile(filePath, this.projectInfo, {}, (err, result) => {
+              if (err) {
+                reject1(err)
+              } else {
+                fse.writeFileSync(filePath, result)
+                resolve1(result)
+              }
+            })
+          }))
+        }))
+          .then(() => resolve())
+          .catch(err => reject(err))
+      })
+    })
+  }
+
   async installNormalTemplate () {
-    console.log('安装标准模版')
+    log.verbose('templateNpm', this.templateNpm)
+    let spinner = spinnerStart('正在安装模版...')
+    await sleep()
+    try {
+      // 拷贝模版代码至当前目录
+      const templatePath = path.resolve(this.templateNpm.cacheFilePath, 'template')
+      const targetPath = process.cwd()
+      fse.ensureDirSync(templatePath)
+      fse.ensureDirSync(targetPath)
+      fse.copySync(templatePath, targetPath)
+    } catch (e) {
+      throw e
+    } finally {
+      spinner.stop(true)
+      log.success('模版安装成功')
+    }
+
+    // ejs渲染
+    const ignore = ['node_modules/**', 'public/**']
+    await this.ejsRender({ ignore })
+
+    // 依赖安装
+    const { installCommand, startCommand } = this.templateInfo
+    await this.execCommand(installCommand, '依赖安装过程失败')
+    // 启动命令执行
+    await this.execCommand(startCommand, '项目启动过程失败')
   }
 
   async installCustomTemplate () {
@@ -79,10 +171,11 @@ class InitCommand extends Command {
     // 1/4 通过egg.js获取mongdb中的数据并且通过API返回
     const { projectTemplate } = this.projectInfo
     const templateInfo = this.template.find(item => item.npmName === projectTemplate)
+    log.verbose('templateInfo', templateInfo)
     const targetPath = path.resolve(userHome, '.xsme-cli', 'template')
     const storeDir = path.resolve(userHome, '.xsme-cli', 'template', 'node_modules')
-    const { npmName, version } = templateInfo
     this.templateInfo = templateInfo
+    const { npmName, version } = templateInfo
     const templateNpm = new Package({
       targetPath,
       storeDir,
@@ -102,6 +195,7 @@ class InitCommand extends Command {
         spinner.stop(true)
         if (await templateNpm.exists()) {
           log.success('模版更新成功')
+          this.templateNpm = templateNpm
         }
       }
     } else {
@@ -116,6 +210,7 @@ class InitCommand extends Command {
         spinner.stop(true)
         if (await templateNpm.exists()) {
           log.success('模版下载成功')
+          this.templateNpm = templateNpm
         }
       }
     }
@@ -162,7 +257,15 @@ class InitCommand extends Command {
   }
 
   async getProjectInfo () {
+    function isValidName (v) {
+      return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
+    }
     let projectInfo = {}
+    let isProjectNameValid = false
+    if (isValidName(this.projectName)) {
+      isProjectNameValid = true
+      projectInfo.projectName = this.projectName
+    }
     // 1. 选择项目或组件模板
     const { type } = await inquirer.prompt({
       type: 'list',
@@ -180,7 +283,7 @@ class InitCommand extends Command {
     log.verbose('type', type)
     if (type === TYPE_PROJECT) {
       // 2. 获取项目的基本信息
-      const project = await inquirer.prompt([{
+      const projectNamePrompt = {
         type: 'input',
         name: 'projectName',
         message: '请输入项目名称',
@@ -188,7 +291,7 @@ class InitCommand extends Command {
         validate: function (v) {
           const done = this.async()
           setTimeout(function () {
-            if (!/^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)) {
+            if (!isValidName(v)) {
               done('请输入合法的项目名称:\n   1.首字符必须为英文字符\n   2.尾字符必须为英文或数字，不能为字符\n   3。字符仅允许"-_"')
               return false
             }
@@ -198,7 +301,12 @@ class InitCommand extends Command {
         filter: function (v) {
           return v
         }
-      }, {
+      }
+      let projectPrompt = []
+      if (!isProjectNameValid) {
+        projectPrompt.push(projectNamePrompt)
+      }
+      projectPrompt = projectPrompt.concat([{
         type: 'input',
         name: 'projectVersion',
         message: '请输入项目版本号',
@@ -222,12 +330,22 @@ class InitCommand extends Command {
         message: '请选择项目模版',
         choices: this.createTemplateChioces()
       }])
+      const project = await inquirer.prompt(projectPrompt)
       projectInfo = {
         type,
+        ...projectInfo,
         ...project
       }
     } else if (type === TYPE_COMPONENT) {}
     // 3. 返回项目基本信息
+    // 生成classname
+    if (projectInfo.projectName) {
+      projectInfo.name = projectInfo.projectName
+      projectInfo.className = require('kebab-case')(projectInfo.projectName).replace(/^-/, '')
+    }
+    if (projectInfo.projectVersion) {
+      projectInfo.version = projectInfo.projectVersion
+    }
     return projectInfo
   }
 

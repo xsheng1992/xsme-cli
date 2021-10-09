@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@xsme-cli/package": "file:../../models/package",
-    "@xsme-cli/log": "file:../../utils/log"
+    "@xsme-cli/log": "file:../../utils/log",
+    "@xsme-cli/utils": "file:../../utils/utils"
   }
 }
