@@ -149,7 +149,8 @@ class InitCommand extends Command {
     }
 
     // ejs渲染
-    const ignore = ['node_modules/**', 'public/**']
+    const templateIgnore = this.templateInfo.ignore || []
+    const ignore = ['**/node_modules/**', ...templateIgnore]
     await this.ejsRender({ ignore })
 
     // 依赖安装
@@ -281,62 +282,91 @@ class InitCommand extends Command {
       }]
     })
     log.verbose('type', type)
+    const title = type === TYPE_PROJECT ? '项目' : '组件'
+    this.template = this.template.filter(template => template.tag.includes(type))
+    // 2. 获取信息流程封装
+    const projectNamePrompt = {
+      type: 'input',
+      name: 'projectName',
+      message: `请输入${title}名称`,
+      default: '',
+      validate: function (v) {
+        const done = this.async()
+        setTimeout(function () {
+          if (!isValidName(v)) {
+            done(`请输入合法的${title}名称:\n   1.首字符必须为英文字符\n   2.尾字符必须为英文或数字，不能为字符\n   3。字符仅允许"-_"`)
+            return false
+          }
+          done(null, true)
+        }, 0)
+      },
+      filter: function (v) {
+        return v
+      }
+    }
+    let projectPrompt = []
+    if (!isProjectNameValid) {
+      projectPrompt.push(projectNamePrompt)
+    }
+    projectPrompt = projectPrompt.concat([{
+      type: 'input',
+      name: 'projectVersion',
+      message: `请输入${title}版本号`,
+      default: '1.0.0',
+      validate: function (v) {
+        const done = this.async()
+        setTimeout(function () {
+          if (!semver.valid(v)) {
+            done(`请输入合法的${title}版本号`)
+            return false
+          }
+          done(null, true)
+        }, 0)
+      },
+      filter: function (v) {
+        return semver.valid(v) || v
+      }
+    }, {
+      type: 'list',
+      name: 'projectTemplate',
+      message: `请选择${title}模版`,
+      choices: this.createTemplateChioces()
+    }])
     if (type === TYPE_PROJECT) {
-      // 2. 获取项目的基本信息
-      const projectNamePrompt = {
-        type: 'input',
-        name: 'projectName',
-        message: '请输入项目名称',
-        default: '',
-        validate: function (v) {
-          const done = this.async()
-          setTimeout(function () {
-            if (!isValidName(v)) {
-              done('请输入合法的项目名称:\n   1.首字符必须为英文字符\n   2.尾字符必须为英文或数字，不能为字符\n   3。字符仅允许"-_"')
-              return false
-            }
-            done(null, true)
-          }, 0)
-        },
-        filter: function (v) {
-          return v
-        }
-      }
-      let projectPrompt = []
-      if (!isProjectNameValid) {
-        projectPrompt.push(projectNamePrompt)
-      }
-      projectPrompt = projectPrompt.concat([{
-        type: 'input',
-        name: 'projectVersion',
-        message: '请输入项目版本号',
-        default: '1.0.0',
-        validate: function (v) {
-          const done = this.async()
-          setTimeout(function () {
-            if (!semver.valid(v)) {
-              done('请输入合法的项目版本号')
-              return false
-            }
-            done(null, true)
-          }, 0)
-        },
-        filter: function (v) {
-          return semver.valid(v) || v
-        }
-      }, {
-        type: 'list',
-        name: 'projectTemplate',
-        message: '请选择项目模版',
-        choices: this.createTemplateChioces()
-      }])
+      // 3.1 获取项目的基本信息
       const project = await inquirer.prompt(projectPrompt)
       projectInfo = {
         type,
         ...projectInfo,
         ...project
       }
-    } else if (type === TYPE_COMPONENT) {}
+    } else if (type === TYPE_COMPONENT) {
+      // 增加描述
+      const descriptionPropmt = {
+        type: 'input',
+        name: 'componentDescription',
+        message: '请输入组件描述信息',
+        default: '',
+        validate: function (v) {
+          const done = this.async()
+          setTimeout(function () {
+            if (!v) {
+              done('请输入组件描述')
+              return false
+            }
+            done(null, true)
+          }, 0)
+        }
+      }
+      projectPrompt.push(descriptionPropmt)
+      // 3.2 获取组件信息
+      const component = await inquirer.prompt(projectPrompt)
+      projectInfo = {
+        type,
+        ...projectInfo,
+        ...component
+      }
+    }
     // 3. 返回项目基本信息
     // 生成classname
     if (projectInfo.projectName) {
@@ -345,6 +375,9 @@ class InitCommand extends Command {
     }
     if (projectInfo.projectVersion) {
       projectInfo.version = projectInfo.projectVersion
+    }
+    if (projectInfo.componentDescription) {
+      projectInfo.description = projectInfo.componentDescription
     }
     return projectInfo
   }
