@@ -96,7 +96,7 @@ class Package {
   }
 
   // 获取入口文件路径
-  getRootPath () {
+  getRootFilePath () {
     function _getRootFile (targetPath) {
       // 1. 获取package.json所在目录 - pkg-dir
       const dir = pkgDir(targetPath)

@@ -58,7 +58,7 @@ async function exec() {
       packageVersion
     })
   }
-  const rootFile = pkg.getRootPath()
+  const rootFile = pkg.getRootFilePath()
   if (rootFile) {
     try {
       // 在当前进程中引用
